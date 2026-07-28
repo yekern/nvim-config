@@ -8,7 +8,7 @@ return {
       -- 确保安装你需要的全部语言解析器
       ensure_installed = { 
         "lua", "python", "javascript", "typescript", "html", "css", "json", "markdown",
-        "go", "php", "vue" 
+        "go", "php", "vue","blade","markdown_inline" 
       },
       
       -- 开启语法高亮

@@ -38,4 +38,14 @@ opt.termguicolors = true
 opt.signcolumn = "yes"
 
 
-
+vim.g.clipboard = {
+  name = "OSC52",
+  copy = {
+    ["+"] = require("vim.ui.clipboard.osc52").copy("+"),
+    ["*"] = require("vim.ui.clipboard.osc52").copy("*"),
+  },
+  paste = {
+    ["+"] = require("vim.ui.clipboard.osc52").paste,  -- ← 不传参
+    ["*"] = require("vim.ui.clipboard.osc52").paste,  -- ← 不传参
+  },
+}

@@ -4,25 +4,36 @@ return {
     "nvim-tree/nvim-web-devicons"
   },
   lazy = false,
-  -- 在这里直接绑定 Tab 键切换标签页的快捷键
   keys = {
     { "<Tab>", "<cmd>BufferLineCycleNext<cr>", desc = "下一个标签页" },
     { "<S-Tab>", "<cmd>BufferLineCyclePrev<cr>", desc = "上一个标签页" },
-    { "<leader>bc", "<cmd>bdelete<cr>", desc = "关闭当前标签页" },
+    { "<leader>bc", function()
+      -- 在 tree 窗口里按关闭，直接切回编辑区而不是删 tree
+      if vim.bo.filetype == "nvimtree" then
+        vim.cmd("wincmd h")
+      else
+        vim.cmd("bdelete")
+      end
+    end, { desc = "关闭 Buffer" } },
+    { "<leader>bb", "<cmd>BufferLinePick<cr>", desc = "Pick Buffer" },
   },
-  config = function() -- 💡 注意：这里是 Lua 语法，没有大括号 {}
+  config = function()
     require("bufferline").setup({
       options = {
         offsets = {
           {
-            filetype = "nvim-tree",
-            text = "File Explorer", -- 文件树上方的标题文字
+            filetype = "nvimtree",
+            text = "File Explorer",
             text_align = "center",
             separator = true,
           }
-        }
+        },
+        -- ✅ 关键：让 bufferline 忽略 nvimtree 的 buffer
+        exclude = function(bufnr)
+          return vim.bo[bufnr].filetype == "nvimtree"
+        end,
+        auto_select_buffer = true,
       }
     })
-  end, -- 💡 注意：这里用 end 结束函数
+  end,
 }
-

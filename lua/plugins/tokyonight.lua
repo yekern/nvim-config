@@ -30,8 +30,9 @@ return {
      opts = { flavour = "mocha", transparent_background = false },
      config = function(_, opts)
        require("catppuccin").setup(opts)
-       vim.cmd.colorscheme("catppuccin-mocha")
-     end,
+      -- vim.cmd.colorscheme("catppuccin-mocha")
+      vim.cmd.colorscheme("catppuccin-macchiato") 
+    end,
    },
 
   -- 顺手加个切换键：<leader>th 在 tokyonight 几个风格间循环
