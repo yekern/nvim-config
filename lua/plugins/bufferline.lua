@@ -16,6 +16,10 @@ return {
       end
     end, { desc = "关闭 Buffer" } },
     { "<leader>bb", "<cmd>BufferLinePick<cr>", desc = "Pick Buffer" },
+
+    {"<leader>bl","<cmd>BufferLineCloseLeft<cr>",desc="关闭左侧标签页"},
+    {"<leader>bl","<cmd>BufferLineCloseLeft<cr>",desc="关闭左侧标签页"},
+    {"<leader>br","<cmd>BufferLineCloseRight<cr>",desc="关闭右侧标签页"},
   },
   config = function()
     require("bufferline").setup({

@@ -23,7 +23,9 @@ opt.cursorline = true
 opt.mouse:append("a")
 
 -- 系统剪切板
-opt.clipboard:append("unnamedplus")
+-- opt.clipboard:append("unnamedplus")
+vim.g.clipboard = "osc52"
+opt.clipboard = "unnamedplus"
 
 -- 默认新窗口右边和下面
 opt.splitright = true
@@ -38,14 +40,14 @@ opt.termguicolors = true
 opt.signcolumn = "yes"
 
 
-vim.g.clipboard = {
-  name = "OSC52",
-  copy = {
-    ["+"] = require("vim.ui.clipboard.osc52").copy("+"),
-    ["*"] = require("vim.ui.clipboard.osc52").copy("*"),
-  },
-  paste = {
-    ["+"] = require("vim.ui.clipboard.osc52").paste,  -- ← 不传参
-    ["*"] = require("vim.ui.clipboard.osc52").paste,  -- ← 不传参
-  },
-}
+-- vim.g.clipboard = {
+--   name = "OSC52",
+--   copy = {
+--     ["+"] = require("vim.ui.clipboard.osc52").copy("+"),
+--     ["*"] = require("vim.ui.clipboard.osc52").copy("*"),
+--   },
+--   paste = {
+--     ["+"] = require("vim.ui.clipboard.osc52").paste,  -- ← 不传参
+--     ["*"] = require("vim.ui.clipboard.osc52").paste,  -- ← 不传参
+--   },
+-- }

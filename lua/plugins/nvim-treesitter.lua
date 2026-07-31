@@ -5,6 +5,7 @@ return {
     -- 最新版不再使用 require("nvim-treesitter.configs").setup()
     -- 而是直接通过插件自带的 main 模块进行底层配置
     require("nvim-treesitter").setup({
+      auto_install = true,
       -- 确保安装你需要的全部语言解析器
       ensure_installed = { 
         "lua", "python", "javascript", "typescript", "html", "css", "json", "markdown",
