@@ -12,7 +12,8 @@ return {
   {
     "mason-org/mason-lspconfig.nvim",
     opts = {
-      ensure_installed = { "lua_ls", "phpactor" },
+      ensure_installed = { "lua_ls", "phpactor","ts_ls","vue_ls" },
+      automatic_enable = false,
     },
     dependencies = { "mason-org/mason.nvim" },
   },
@@ -73,6 +74,44 @@ return {
         underline = true,
         update_in_insert = false,
       })
+
+      -- TypeScript / Vue
+      -- local mason_pkgs = vim.fn.stdpath("data") .. "/mason/packages"
+      -- local vue_plugin = mason_pkgs
+      --   .. "/vue-language-server/node_modules/@vue/language-server"
+      --
+      -- vim.lsp.config("ts_ls", {
+      --   on_attach = on_attach,
+      --   init_options = {
+      --     plugins = {
+      --       {
+      --         name = "@vue/typescript-plugin",
+      --         location = vue_plugin,
+      --         languages = { "vue" },
+      --       },
+      --     },
+      --   },
+      --   filetypes = {
+      --     "typescript",
+      --     "javascript",
+      --     "javascriptreact",
+      --     "typescriptreact",
+      --     "vue",
+      --   },
+      -- })
+      -- vim.lsp.enable("ts_ls")
+      --
+      -- -- Vue Language Server
+      -- vim.lsp.config("vue_ls", {
+      --   on_attach = on_attach,
+      --   init_options = {
+      --     typescript = {
+      --       tsdk = mason_pkgs .. "/vue-language-server/node_modules/typescript/lib",
+      --     },
+      --   },
+      -- })
+      -- vim.lsp.enable("vue_ls")
+
     end,
   },
 }

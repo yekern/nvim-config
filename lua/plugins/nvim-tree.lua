@@ -28,7 +28,12 @@ return {
       },
       filters = {
         dotfiles = false,
-        custom = { "node_modules", ".git" },
+        custom = { 
+          "node_modules",
+          "\\.DS_Store$",   -- 匹配任意层级以 .DS_Store 结尾
+          "\\.ds_store$",   -- 匹配任意层级以 .ds_store 结尾（以防大小写变体）
+          "^\\.git$",       -- 只匹配根目录下的 .git（不碰 .gitignore）
+        },
       },
       git = {
         enable = true,
@@ -50,15 +55,15 @@ return {
         local api = require("nvim-tree.api")
         local map = vim.keymap.set
         local opts = { buffer = bufnr, silent = true, noremap = true }
-        local function copy_abs_to_clip()
-          local node = api.tree.get_node_under_cursor()
-          if not node then return end
-            local path = node.absolute_path
-              -- 用 OSC 52 直接写系统剪贴板
-            local b64 = vim.base64.encode(path)
-            vim.api.nvim_chan_send(vim.v.stderr, "\x1b]52;c;" .. b64 .. "\x07")
-            vim.notify("Copied: " .. path)
-        end
+        -- local function copy_abs_to_clip()
+        --   local node = api.tree.get_node_under_cursor()
+        --   if not node then return end
+        --     local path = node.absolute_path
+        --       -- 用 OSC 52 直接写系统剪贴板
+        --     local b64 = vim.base64.encode(path)
+        --     vim.api.nvim_chan_send(vim.v.stderr, "\x1b]52;c;" .. b64 .. "\x07")
+        --     vim.notify("Copied: " .. path)
+        -- end
         -- 文件操作
         map("n", "<CR>",  api.node.open.edit,               opts) -- 打开文件，焦点回编辑区
         map("n", "o",     api.node.open.edit,               opts)
@@ -79,7 +84,7 @@ return {
         map("n", "x",     api.fs.cut,                       opts) -- 剪切
         map("n", "p",     api.fs.paste,                     opts) -- 粘贴
         map("n", "y",     api.fs.copy.filename,             opts) -- 复制文件名
-        map("n", "Y",     copy_abs_to_clip,        opts) -- 复制相对路径
+        map("n", "Y",     api.fs.copy.absolute_path,        opts) -- 复制相对路径
 
         -- 刷新
         map("n", "R",     api.tree.reload,                  opts)
