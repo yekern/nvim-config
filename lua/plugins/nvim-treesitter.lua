@@ -1,41 +1,33 @@
 return {
   "nvim-treesitter/nvim-treesitter",
+  lazy = false,
   build = ":TSUpdate",
   config = function()
-    -- 最新版不再使用 require("nvim-treesitter.configs").setup()
-    -- 而是直接通过插件自带的 main 模块进行底层配置
-    require("nvim-treesitter").setup({
-      auto_install = true,
-      -- 确保安装你需要的全部语言解析器
-      ensure_installed = { 
-        "lua", "python", "javascript", "typescript", "html", "css", "json", "markdown",
-        "go", "php", "vue","blade","markdown_inline" 
-      },
-      
-      -- 开启语法高亮
-      highlight = { enable = true },
-      
-      -- 开启基于 Tree-sitter 的智能缩进
-      indent = { enable = true },
-      
-      -- 开启键盘增量选择
-      incremental_selection = {
-        enable = true,
-        keymaps = {
-          init_selection = "<CR>",      -- 回车开始选择
-          node_incremental = "<CR>",    -- 回车扩大选择范围
-          scope_incremental = "<TAB>",   -- Tab 扩大到外层作用域
-          node_decremental = "<BS>",    -- 退格键缩小选择范围
-        },
-      },
-    })
+    local ts = require("nvim-treesitter")
 
-    -- 开启基于 Tree-sitter 的代码折叠（最新版 Neovim 官方原生自带的折叠函数）
-    vim.opt.foldmethod = "expr"
-    vim.opt.foldexpr = "v:lua.vim.treesitter.foldexpr()"
-    
-    -- 默认不折叠所有代码（展开状态）
-    vim.opt.foldlevel = 99
+    -- 缺失的 parser 自动补装（需要 tree-sitter CLI，已装：/opt/homebrew/bin/tree-sitter）
+    local wanted = {
+      "lua", "python", "javascript", "typescript", "tsx", "html", "css", "json",
+      "markdown", "markdown_inline", "go", "php", "vue", "blade", "yaml", "bash",
+    }
+    local installed = ts.get_installed("parsers")
+    local missing = vim.tbl_filter(function(p)
+      return not vim.tbl_contains(installed, p)
+    end, wanted)
+    if #missing > 0 and vim.fn.executable("tree-sitter") == 1 then
+      ts.install(missing)
+    end
+
+    -- 高亮 + 折叠：Neovim 0.12 的 treesitter 需要显式 start（插件已不再代劳）
+    vim.api.nvim_create_autocmd("FileType", {
+      group = vim.api.nvim_create_augroup("TreesitterStart", { clear = true }),
+      callback = function()
+        if pcall(vim.treesitter.start) then
+          vim.wo.foldexpr = "v:lua.vim.treesitter.foldexpr()"
+          vim.wo.foldmethod = "expr"
+          vim.wo.foldlevel = 99 -- 默认全部展开
+        end
+      end,
+    })
   end,
 }
-

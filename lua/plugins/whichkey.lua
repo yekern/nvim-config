@@ -12,15 +12,15 @@ return {
       local wk = require("which-key")
       wk.setup(opts)
 
-      -- 分组名（只起"目录"作用，不绑命令）
+      -- 分组名（只是"目录"，不绑命令；每个键的说明由各自的 desc 决定）
       wk.add({
-        { "<leader>b", group = "Buffer" },
-        { "<leader>c", group = "Code/Comment" },
-        { "<leader>f", group = "File/Find" },
-        { "<leader>g", group = "Git" },
-        { "<leader>l", group = "LSP" },
-        { "<leader>t", group = "Tree/Toggle" },
-        { "<leader>h", group = "Hunk (Gitsigns)" },
+        { "<leader>b", group = "Buffer 缓冲区" },
+        { "<leader>g", group = "Git 版本控制" },
+        { "<leader>h", group = "帮助" },
+        { "<leader>j", group = "Jump 跳转" },
+        { "<leader>l", group = "LSP 代码智能" },
+        { "<leader>m", group = "Markdown" },
+        { "<leader>w", group = "Window 窗口" },
       })
     end,
   },

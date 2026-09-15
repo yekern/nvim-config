@@ -7,12 +7,14 @@ return {
       { "nvim-telescope/telescope-fzf-native.nvim", build = "make" },
     },
     keys = {
-      { "<leader>ff", "<cmd>Telescope find_files<cr>", desc = "Find File" },
-      { "<leader>fg", "<cmd>Telescope live_grep<cr>", desc = "Grep 内容" },
-      { "<leader>fb", "<cmd>Telescope buffers<cr>", desc = "Buffers" },
-      { "<leader>fh", "<cmd>Telescope help_tags<cr>", desc = "Help Tags" },
-      { "<leader>fs", "<cmd>Telescope treesitter<cr>", desc = "Symbols" },
-      { "<leader>fr", "<cmd>Telescope oldfiles<cr>", desc = "Recent Files" },
+      { "<leader>f", "<cmd>Telescope find_files<cr>", desc = "查找文件" },
+      { "<leader>/", "<cmd>Telescope live_grep<cr>", desc = "全局搜索内容" },
+      { "<leader>s", "<cmd>Telescope lsp_document_symbols<cr>", desc = "当前文件符号" },
+      { "<leader>r", "<cmd>Telescope oldfiles<cr>", desc = "最近打开的文件" },
+      { "<leader>bb", "<cmd>Telescope buffers<cr>", desc = "切换 Buffer" },
+      { "<leader>le", "<cmd>Telescope diagnostics<cr>", desc = "诊断列表" },
+      { "<leader>hk", "<cmd>Telescope keymaps<cr>", desc = "快捷键速查" },
+      { "<leader>hh", "<cmd>Telescope help_tags<cr>", desc = "Neovim 帮助文档" },
     },
     config = function()
       require("telescope").setup({

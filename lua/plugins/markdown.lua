@@ -1,16 +1,14 @@
--- lua/plugins/markdown.lua
 return {
   -- ── 原地美化：render-markdown ─────────────────────
   {
     "MeanderingProgrammer/render-markdown.nvim",
-    ft = { "markdown", "md", "mkd" },
+    ft = { "markdown" },
     dependencies = {
-      "nvim-treesitter/nvim-treesitter", -- 必须有 treesitter 的 markdown parser
-      "echasnovski/mini.icons",          -- 可选，没装就用 nvim-web-devicons
+      "nvim-treesitter/nvim-treesitter",
+      "echasnovski/mini.icons",
     },
     opts = {
-      file_types = { "markdown", "md", "mkd" },
-      render_modes = { "n", "v" },       -- 普通/可视模式渲染，插入模式不渲染
+      render_modes = { "n", "v" }, -- 普通/可视模式渲染，插入模式不渲染
       completions = { lsp = { enabled = true } }, -- LSP 补全里的 Markdown 片段
       heading = { enabled = true, icons = { enabled = true } },
       code = { enabled = true, style = "full" }, -- 代码块完整渲染
@@ -19,22 +17,22 @@ return {
       table = { enabled = true, extend_mode = "full" },
       quote = { enabled = true, style = "full" },
     },
-    config = function(_, opts)
-      require("render-markdown").setup(opts)
-    end,
+    keys = {
+      { "<leader>mr", "<cmd>RenderMarkdown toggle<cr>", desc = "Markdown 渲染 开/关" },
+    },
   },
 
-  -- ── 终端分屏预览：glow ──────────────────────────
+  -- ── 浏览器/终端预览：glow ────────────────────────
   {
     "ellisonleao/glow.nvim",
-    ft = { "markdown", "md", "mkd" },
-    cmd = { "Glow" }, -- 懒加载，只有 :Glow 时才加载
+    ft = { "markdown" },
+    cmd = { "Glow" },
     keys = {
-      { "<leader>mg", "<cmd>Glow<cr>", desc = "Glow MD 预览" },
+      { "<leader>mp", "<cmd>Glow<cr>", desc = "Markdown 预览" },
     },
     config = function()
       require("glow").setup({
-        style = "dark",          -- dark / light / auto
+        style = "dark", -- dark / light / auto
       })
     end,
   },

@@ -39,6 +39,9 @@ opt.smartcase = true
 opt.termguicolors = true
 opt.signcolumn = "yes"
 
+-- gitsigns / 诊断更新更快（默认 4000ms 太慢）
+opt.updatetime = 250
+
 
 -- vim.g.clipboard = {
 --   name = "OSC52",

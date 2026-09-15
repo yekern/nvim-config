@@ -7,8 +7,8 @@ return {
     "folke/which-key.nvim", -- 顺手声明依赖，让 wk 能吃到 desc
   },
   keys = {
-    { "<leader>e", "<cmd>NvimTreeToggle<cr>", desc = "Toggle NvimTree" },
-    { "<leader>E", "<cmd>NvimTreeFindFile<cr>", desc = "NvimTree 定位当前文件" },
+    { "<leader>e", "<cmd>NvimTreeToggle<cr>", desc = "文件树 开/关" },
+    { "<leader>E", "<cmd>NvimTreeFindFile<cr>", desc = "文件树 定位当前文件" },
   },
   config = function()
     local nvim_tree = require("nvim-tree")
@@ -97,12 +97,5 @@ return {
         map("n", "?",     api.tree.toggle_help,             opts)
       end,
     })
-    -- ✅ 全局快捷键：从编辑器切回树
-    vim.keymap.set("n", "<leader>e", ":NvimTreeFocus<CR>",
-      { desc = "Focus nvim-tree" })
-
-    -- ✅ 可选：在树里定位当前打开的文件
-    vim.keymap.set("n", "<leader>E", ":NvimTreeFindFile<CR>",
-      { desc = "Find current file in nvim-tree" })
   end,
 }
