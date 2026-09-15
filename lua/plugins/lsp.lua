@@ -10,7 +10,9 @@ return {
     "mason-org/mason-lspconfig.nvim",
     opts = {
       -- 按项目技术栈需要的语言服务（gopls 用 ~/go/bin 里那份，不重复装）
-      ensure_installed = { "lua_ls", "intelephense", "phpactor", "laravel-ls", "vtsls", "vue_ls" },
+      -- 注意：这里必须是 lspconfig 的 server 名，不是 mason 包名
+      -- （laravel-ls 的包名有连字符，server 名是下划线 laravel_ls，写错会在启动时弹 warning）
+      ensure_installed = { "lua_ls", "intelephense", "phpactor", "laravel_ls", "vtsls", "vue_ls" },
       automatic_enable = false,
     },
     dependencies = { "mason-org/mason.nvim" },
