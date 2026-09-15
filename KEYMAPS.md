@@ -198,6 +198,21 @@
 | 前端（Vue/TS/JS） | 766 个 ts + 708 个 vue | `vtsls`（TS/JS）+ `vue_ls`（Vue SFC），vtsls 已挂 `@vue/typescript-plugin`，两者必须一起开（vue_ls 3.x 是 hybrid 模式） |
 | uni-app x（.uvue/.uts） | 42 个 | 以前**没有任何高亮和补全**（nvim 不认这两个后缀）→ 现在映射为 vue/typescript，高亮 + LSP 都有了 |
 
+### PHP 三个服务怎么分工（2026-09-15 追加，实测对比后定的）
+
+| 服务 | 负责 | 实测依据 |
+| --- | --- | --- |
+| **Intelephense**（主力） | 补全、hover、跳定义、找引用、诊断 | `Cache::` 处补全 **100 项 / 8ms**（phpactor 只有 13 项）；`$model::query()` 能找到 **2745 条**引用（phpactor 只找到 8 条，因为它认不出 Laravel 基类继承来的方法） |
+| **Phpactor** | **重命名**、代码动作、找实现 | 这三项是 intelephense 的**付费**功能（$35 一次性授权）；phpactor 免费，实测重命名 `AdSlot` 类名 = 8 个文件 30 处编辑 |
+| **laravel-ls** | Laravel 专属：`config('app.url')` 能**直接跳到 config/app.php**，`route()`/`view()`/`__()` 同理；blade 文件也归它 | 另两个服务在这个位置都是空结果 |
+
+三者的能力已在 `lua/plugins/lsp.lua` 的 `on_init` 里切成互不重叠，**不会出现重复补全或重复诊断**。
+
+- 重命名时输入框会**预填旧名字**，先按 `Ctrl-U` 清空再输新名（Neovim 通用行为，不是配置问题）。
+- 输入框回车后改动会落在缓冲区里，**记得 `:w`** 保存；想放弃就 `:e!` 重载。
+- 内存占用（单项目实测）：intelephense ≈ 360MB、phpactor ≈ 130MB、laravel-ls ≈ 17MB。不做重命名/代码动作的话，注释掉 `vim.lsp.enable("phpactor")` 可省 130MB。
+- 想「一个服务搞定」：买 intelephense 授权（$35，终身）→ 把 `licenceKey` 填上、删掉 intelephense `on_init` 里那三行、再停用 phpactor。
+
 格式化（`空格 l f`）按项目里的工具走，不额外装全局包：
 
 | 文件 | 用谁 |

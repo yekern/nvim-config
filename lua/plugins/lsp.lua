@@ -10,7 +10,7 @@ return {
     "mason-org/mason-lspconfig.nvim",
     opts = {
       -- 按项目技术栈需要的语言服务（gopls 用 ~/go/bin 里那份，不重复装）
-      ensure_installed = { "lua_ls", "phpactor", "laravel-ls", "vtsls", "vue_ls" },
+      ensure_installed = { "lua_ls", "intelephense", "phpactor", "laravel-ls", "vtsls", "vue_ls" },
       automatic_enable = false,
     },
     dependencies = { "mason-org/mason.nvim" },
@@ -49,16 +49,55 @@ return {
         update_in_insert = false,
       })
 
-      -- ── PHP：Phpactor ───────────────────────────
+      -- ── PHP：Intelephense（主力：补全/hover/跳转/引用/诊断）──
+      -- 免费版就够用：功能比 phpactor 准且快（Laravel 继承链、门面解析都更完整）
+      -- rename / code action / 找实现 是付费功能（$35 一次性），在免费版下静默返回空
+      vim.lsp.config("intelephense", {
+        -- 钉死用 mason 那份（你 nvm/volta 全局也装了一个同名命令，避免版本漂移）
+        cmd = { vim.fn.stdpath("data") .. "/mason/bin/intelephense", "--stdio" },
+        settings = {
+          intelephense = {
+            environment = { phpVersion = "8.2" },
+            files = { maxSize = 5000000 },
+            format = { enable = false }, -- 格式化交给 Pint
+            telemetry = { enabled = false },
+            -- licenceKey = "如果你买了授权，填这里",
+          },
+        },
+        on_init = function(client)
+          -- 付费能力在免费版返回空，交给 phpactor 接（买了授权就把这三行删掉）
+          client.server_capabilities.renameProvider = nil
+          client.server_capabilities.codeActionProvider = nil
+          client.server_capabilities.implementationProvider = nil
+        end,
+      })
+      vim.lsp.enable("intelephense")
+
+      -- ── PHP：Phpactor（只当"重构引擎"）──────────
+      -- 免费白送 rename / 代码动作 / 找实现；读取类能力全部关掉，避免和 intelephense 重复
       vim.lsp.config("phpactor", {
         cmd = { "phpactor", "language-server" },
         filetypes = { "php" },
         root_markers = { "composer.json", ".git" },
+        on_init = function(client)
+          local caps = client.server_capabilities
+          caps.completionProvider = nil
+          caps.hoverProvider = nil
+          caps.definitionProvider = nil
+          caps.declarationProvider = nil
+          caps.typeDefinitionProvider = nil
+          caps.referencesProvider = nil
+          caps.documentSymbolProvider = nil
+          caps.signatureHelpProvider = nil
+          caps.diagnosticProvider = nil
+          caps.documentFormattingProvider = nil
+        end,
       })
       vim.lsp.enable("phpactor")
 
-      -- ── Laravel：laravel-ls（route / config / view / env / 模型字段补全）──
-      -- 与 phpactor 并存：phpactor 管通用 PHP，laravel-ls 管 Laravel 语法糖
+      -- ── Laravel：laravel-ls（框架专属）──────────
+      -- 实测：config('app.url') 能跳到 config/app.php，route()/view()/__() 同理；
+      -- 通用 PHP 能力它没有，所以三个服务互补，不冲突
       vim.lsp.config("laravel_ls", {
         filetypes = { "php", "blade" },
       })
