@@ -129,6 +129,7 @@
 - **跳函数**：光标停在函数名上 → `空格 l d`
 - **看谁调用了它**：`空格 l r`
 - **改完看改动**：`空格 g d`（全项目 diff，可读可改）→ 再按一次关闭
+- **格式化当前文件**：`空格 l f`（PHP 用项目的 Pint、Vue/TS 用 Prettier、Go 用 gofmt）
 - **提交**：`空格 g g` → 在 lazygit 里 `空格` 暂存、`c` 提交、`P` 推送、`q` 退出
 - **只暂存一部分**：光标停在改动上 → `空格 g s`（按块暂存），`空格 g r` 撤销
 - **在文件里乱跑**：`空格 j w` 跟着字母提示跳
@@ -142,7 +143,8 @@
 | telescope (+fzf-native) | 模糊查找一切 | `空格 f` `空格 /` `空格 s` `空格 r` `空格 b b` `空格 l e` `空格 h k` `空格 h h` |
 | bufferline | 顶部 Buffer 标签栏 | `Tab` `Shift Tab` `空格 b *` |
 | which-key | 按键提示面板（把记忆外包给它） | `空格` `空格 ?` |
-| nvim-lspconfig + mason | LSP（当前启用 phpactor / lua_ls）：跳转、引用、重命名、格式化、诊断 | `空格 l *` `K` |
+| nvim-lspconfig + mason | LSP 语言服务：PHP = phpactor + laravel-ls、Go = gopls、TS/JS/Vue = vtsls + vue_ls、Lua = lua_ls | `空格 l *` `K` |
+| conform.nvim | 格式化：PHP 用项目的 Pint、前端用 Prettier、Go 用 gofmt，没有就回退 LSP | `空格 l f` |
 | blink.cmp | 补全：`Tab` 选择、`回车` 确认、`Esc` 关闭 | 插入模式 |
 | nvim-treesitter | 语法高亮 + 折叠（main 分支重写版） | 自动，折叠用 `z*` |
 | gitsigns | 行内增删改标记、按块暂存/撤销、blame | `空格 g s/r/u/p/b/f/S/R` `]c` `[c` |
@@ -185,8 +187,45 @@
 13. 启动时对所有文件强设 `foldmethod=expr` → 现在只对能解析出语法树的文件类型设置。
 14. 新增 `updatetime = 250`，让 gitsigns 标记和诊断更新更及时。
 
-## 9. 还没动的部分
+## 9. 按项目补装的语言服务（2026-09-15 第二批）
 
-- `ts_ls` / `vue_ls`（TS/Vue 语言服务）的配置仍是注释状态，在 `lua/plugins/lsp.lua` 里，需要写 Vue/TS 时放开即可。
+按 `~/Code` 下实际代码量补的，改 `.uvue/.uts` 时也能用了：
+
+| 项目类型 | 代码量 | 现在用什么 |
+| --- | --- | --- |
+| Laravel（fubao-life / laravel-kefu） | 2160 个 php | `phpactor`（通用 PHP）+ `laravel_ls`（Laravel 专属：route/config/view/env/模型字段，blade 文件也有） |
+| Go（go-full-framework / kefu-go） | 768 个 go | `gopls`（用 `~/go/bin/gopls`，含 staticcheck 分析与参数名提示） |
+| 前端（Vue/TS/JS） | 766 个 ts + 708 个 vue | `vtsls`（TS/JS）+ `vue_ls`（Vue SFC），vtsls 已挂 `@vue/typescript-plugin`，两者必须一起开（vue_ls 3.x 是 hybrid 模式） |
+| uni-app x（.uvue/.uts） | 42 个 | 以前**没有任何高亮和补全**（nvim 不认这两个后缀）→ 现在映射为 vue/typescript，高亮 + LSP 都有了 |
+
+格式化（`空格 l f`）按项目里的工具走，不额外装全局包：
+
+| 文件 | 用谁 |
+| --- | --- |
+| php | 项目自带的 Pint（`vendor/bin/pint`，读你的 `pint.json`） |
+| vue / ts / js / css / scss / html / json / yaml / md | 项目自带的 Prettier（`node_modules/.bin/prettier`） |
+| go | gofmt |
+| 其他（lua 等） | 回退到 LSP 的格式化 |
+
+另外补了 sql / scss / dockerfile / ini / make 的 treesitter 语法树。
+
+> 注意：nvim 必须从终端（iTerm/kaku）启动，`vtsls`/`vue_ls` 需要 PATH 里有 node（volta 的 `~/.volta/bin`）。从 GUI 启动器打开的话，请先把 PATH 配好。
+
+## 10. 可选补充（还没装，需要时再说）
+
+| 插件 | 能解决什么 | 成本 |
+| --- | --- | --- |
+| `nvim-dap` + `nvim-dap-ui` | 图形断点调试。Go 侧 `dlv` 你已经装了，接上就能用；PHP 要配 Xdebug | 中 |
+| `neotest` | 在编辑器里跑 PHPUnit / Go test，红绿标记 | 中 |
+| `nvim-spectre` | 全项目搜索替换（带预览），适合批量改路由名/权限码 | 低 |
+| `fidget.nvim` | 右下角显示 LSP 索引进度（phpactor/gopls 首次索引很慢） | 低 |
+| `inc-rename.nvim` | 重命名时实时预览改动（配合 `空格 l n`，但不会改到就别处） | 低 |
+
+目前这些没装的理由：都能用现成手段替代（`空格 l e` 看诊断、lazygit 看 diff、AI 会话里做批量替换），装了会多一层要维护的配置。
+
+## 11. 其他说明
+
+- TS/Vue 语言服务已启用（第二批），原来的 `ts_ls` 注释配置已被 `vtsls + vue_ls` 取代。
+- 格式化不在保存时自动跑（避免 AI 写的大改动被整片重排）；要开自动格式化，在 `lua/plugins/format.lua` 的 `opts` 里加 `format_on_save = { timeout_ms = 1000 }`。
 - 主题固定为 catppuccin macchiato（原 `空格 t h` 循环主题的键随 tokyonight 一起删了）；要换风格改 `lua/plugins/colorscheme.lua` 的 `flavour`（latte / frappe / macchiato / mocha）。
 - 窗口/分屏、Buffer 的键位都在上面表里，`.vimrc` 时代的 `Ctrl w` 前缀键仍然可用（原生），只是推荐用 `Ctrl h/j/k/l`。

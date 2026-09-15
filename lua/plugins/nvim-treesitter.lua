@@ -9,6 +9,7 @@ return {
     local wanted = {
       "lua", "python", "javascript", "typescript", "tsx", "html", "css", "json",
       "markdown", "markdown_inline", "go", "php", "vue", "blade", "yaml", "bash",
+      "sql", "scss", "dockerfile", "ini", "make",
     }
     local installed = ts.get_installed("parsers")
     local missing = vim.tbl_filter(function(p)

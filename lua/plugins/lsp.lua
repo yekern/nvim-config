@@ -1,5 +1,5 @@
 return {
-  -- ── Mason（LSP / 格式化器安装器）─────────────────
+  -- ── Mason（LSP 安装器）──────────────────────────
   {
     "mason-org/mason.nvim",
     opts = {},
@@ -9,7 +9,8 @@ return {
   {
     "mason-org/mason-lspconfig.nvim",
     opts = {
-      ensure_installed = { "lua_ls", "phpactor", "ts_ls", "vue_ls" },
+      -- 按项目技术栈需要的语言服务（gopls 用 ~/go/bin 里那份，不重复装）
+      ensure_installed = { "lua_ls", "phpactor", "laravel-ls", "vtsls", "vue_ls" },
       automatic_enable = false,
     },
     dependencies = { "mason-org/mason.nvim" },
@@ -34,12 +35,10 @@ return {
           map("<leader>lh", vim.lsp.buf.hover, "悬浮文档")
           map("<leader>ln", vim.lsp.buf.rename, "重命名符号")
           map("<leader>la", vim.lsp.buf.code_action, "代码动作 / 快速修复")
-          map("<leader>lf", function()
-            vim.lsp.buf.format({ async = true })
-          end, "格式化当前文件")
           map("<leader>lj", vim.diagnostic.goto_next, "下一个诊断")
           map("<leader>lk", vim.diagnostic.goto_prev, "上一个诊断")
           map("K", vim.lsp.buf.hover, "悬浮文档")
+          -- 格式化 <leader>lf 在 conform.nvim 里（见 lua/plugins/format.lua）
         end,
       })
 
@@ -50,7 +49,7 @@ return {
         update_in_insert = false,
       })
 
-      -- PHP：Phpactor
+      -- ── PHP：Phpactor ───────────────────────────
       vim.lsp.config("phpactor", {
         cmd = { "phpactor", "language-server" },
         filetypes = { "php" },
@@ -58,7 +57,14 @@ return {
       })
       vim.lsp.enable("phpactor")
 
-      -- Lua：Neovim 配置自身
+      -- ── Laravel：laravel-ls（route / config / view / env / 模型字段补全）──
+      -- 与 phpactor 并存：phpactor 管通用 PHP，laravel-ls 管 Laravel 语法糖
+      vim.lsp.config("laravel_ls", {
+        filetypes = { "php", "blade" },
+      })
+      vim.lsp.enable("laravel_ls")
+
+      -- ── Lua：Neovim 配置自身 ────────────────────
       vim.lsp.config("lua_ls", {
         settings = {
           Lua = {
@@ -73,6 +79,50 @@ return {
         },
       })
       vim.lsp.enable("lua_ls")
+
+      -- ── Go：gopls（go.mod / go.work 项目）────────
+      vim.lsp.config("gopls", {
+        settings = {
+          gopls = {
+            staticcheck = true, -- 需要 staticcheck 命令（~/go/bin/staticcheck 已装）
+            usePlaceholders = true,
+            analyses = { unusedparams = true },
+            hints = {
+              parameterNames = true,
+              assignVariableTypes = true,
+              compositeLiteralFields = true,
+            },
+          },
+        },
+      })
+      vim.lsp.enable("gopls")
+
+      -- ── TS / JS / Vue ───────────────────────────
+      -- vue_ls 3.x 是 hybrid 模式：Vue 的 TS 部分必须由 vtsls 承担，
+      -- 所以两个一起开，并给 vtsls 挂上 @vue/typescript-plugin。
+      local vue_language_server = vim.fn.stdpath("data")
+        .. "/mason/packages/vue-language-server/node_modules/@vue/language-server"
+
+      vim.lsp.config("vtsls", {
+        filetypes = { "javascript", "javascriptreact", "typescript", "typescriptreact", "vue" },
+        settings = {
+          vtsls = {
+            autoUseWorkspaceTsdk = true,
+            tsserver = {
+              globalPlugins = {
+                {
+                  name = "@vue/typescript-plugin",
+                  location = vue_language_server,
+                  languages = { "vue" },
+                  configNamespace = "typescript",
+                },
+              },
+            },
+          },
+        },
+      })
+      vim.lsp.enable("vtsls")
+      vim.lsp.enable("vue_ls")
     end,
   },
 }
