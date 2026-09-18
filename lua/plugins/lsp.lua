@@ -12,7 +12,8 @@ return {
       -- 按项目技术栈需要的语言服务（gopls 用 ~/go/bin 里那份，不重复装）
       -- 注意：这里必须是 lspconfig 的 server 名，不是 mason 包名
       -- （laravel-ls 的包名有连字符，server 名是下划线 laravel_ls，写错会在启动时弹 warning）
-      ensure_installed = { "lua_ls", "intelephense", "phpactor", "laravel_ls", "vtsls", "vue_ls" },
+      -- , "vtsls", "vue_ls"
+      ensure_installed = { "lua_ls", "intelephense", "phpactor", "laravel_ls" },
       automatic_enable = false,
     },
     dependencies = { "mason-org/mason.nvim" },
@@ -23,27 +24,9 @@ return {
     "neovim/nvim-lspconfig",
     dependencies = { "mason-org/mason-lspconfig.nvim" },
     config = function()
-      -- 快捷键挂在 LspAttach 上：只有 LSP 生效的 buffer 才有这些键
-      vim.api.nvim_create_autocmd("LspAttach", {
-        group = vim.api.nvim_create_augroup("UserLspKeymaps", { clear = true }),
-        callback = function(args)
-          local map = function(lhs, rhs, desc)
-            vim.keymap.set("n", lhs, rhs, { buffer = args.buf, silent = true, desc = desc })
-          end
-
-          map("<leader>ld", vim.lsp.buf.definition, "跳到定义")
-          map("<leader>lr", vim.lsp.buf.references, "查找引用")
-          map("<leader>li", vim.lsp.buf.implementation, "跳到实现")
-          map("<leader>lh", vim.lsp.buf.hover, "悬浮文档")
-          map("<leader>ln", vim.lsp.buf.rename, "重命名符号")
-          map("<leader>la", vim.lsp.buf.code_action, "代码动作 / 快速修复")
-          map("<leader>lj", vim.diagnostic.goto_next, "下一个诊断")
-          map("<leader>lk", vim.diagnostic.goto_prev, "上一个诊断")
-          map("K", vim.lsp.buf.hover, "悬浮文档")
-          -- 格式化 <leader>lf 在 conform.nvim 里（见 lua/plugins/format.lua）
-        end,
-      })
-
+      -- <leader>l* 与 K 的键位在 core/keymaps.lua 里**全局**定义。
+      -- 曾经挂在 LspAttach 上（buffer 局部），结果是没附加 LSP 的文件里按 <leader>ld 会漏成
+      -- 「空格 + l + d」原生命令，把当前行删掉；不要再改回 buffer 局部。
       vim.diagnostic.config({
         virtual_text = true,
         signs = true,
@@ -141,29 +124,29 @@ return {
       -- ── TS / JS / Vue ───────────────────────────
       -- vue_ls 3.x 是 hybrid 模式：Vue 的 TS 部分必须由 vtsls 承担，
       -- 所以两个一起开，并给 vtsls 挂上 @vue/typescript-plugin。
-      local vue_language_server = vim.fn.stdpath("data")
-        .. "/mason/packages/vue-language-server/node_modules/@vue/language-server"
+      -- local vue_language_server = vim.fn.stdpath("data")
+      --   .. "/mason/packages/vue-language-server/node_modules/@vue/language-server"
 
-      vim.lsp.config("vtsls", {
-        filetypes = { "javascript", "javascriptreact", "typescript", "typescriptreact", "vue" },
-        settings = {
-          vtsls = {
-            autoUseWorkspaceTsdk = true,
-            tsserver = {
-              globalPlugins = {
-                {
-                  name = "@vue/typescript-plugin",
-                  location = vue_language_server,
-                  languages = { "vue" },
-                  configNamespace = "typescript",
-                },
-              },
-            },
-          },
-        },
-      })
-      vim.lsp.enable("vtsls")
-      vim.lsp.enable("vue_ls")
+      -- vim.lsp.config("vtsls", {
+      --   filetypes = { "javascript", "javascriptreact", "typescript", "typescriptreact", "vue" },
+      --   settings = {
+      --     vtsls = {
+      --       autoUseWorkspaceTsdk = true,
+      --       tsserver = {
+      --         globalPlugins = {
+      --           {
+      --             name = "@vue/typescript-plugin",
+      --             location = vue_language_server,
+      --             languages = { "vue" },
+      --             configNamespace = "typescript",
+      --           },
+      --         },
+      --       },
+      --     },
+      --   },
+      -- })
+      -- vim.lsp.enable("vtsls")
+      -- vim.lsp.enable("vue_ls")
     end,
   },
 }

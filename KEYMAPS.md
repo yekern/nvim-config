@@ -67,7 +67,10 @@
 | `空格 j c` | 跳到任意两个字符处 |
 | `空格 j l` | 跳到某一行 |
 
-### `空格 l` — LSP 代码智能（只在支持语言服务的文件里出现）
+### `空格 l` — LSP 代码智能（任何文件里都能按）
+
+> 这组键**全局定义**（不再挂 `LspAttach`）：当前文件没有语言服务时，按下会提示「当前文件没有 LSP 客户端」并结束，**绝不会漏成 `空格`/`l`/`i` 这种原生命令**。
+> 历史教训：曾经挂在 `LspAttach` 上（buffer 局部），没附加 LSP 的文件里按 `空格 l d` 会变成「右移 + 右移 + 删除操作符」，紧接着再按一次 `d` 就是 `dd` —— 直接删掉当前行；`空格 l i` 则会直接进插入模式。
 
 | 键 | 功能 |
 | --- | --- |
@@ -77,9 +80,9 @@
 | `空格 l h` | 悬浮文档（等同 `K`） |
 | `空格 l n` | 重命名符号（全项目一起改） |
 | `空格 l a` | 代码动作 / 快速修复 |
-| `空格 l f` | 格式化当前文件 |
-| `空格 l j` | 下一个诊断（错误/警告） |
-| `空格 l k` | 上一个诊断 |
+| `空格 l f` | 格式化当前文件（不需要 LSP，按项目工具走） |
+| `空格 l j` | 下一个诊断（错误/警告，不需要 LSP） |
+| `空格 l k` | 上一个诊断（不需要 LSP） |
 | `空格 l e` | 诊断列表（Telescope） |
 
 ### `空格 m` — Markdown
@@ -107,7 +110,7 @@
 | `Ctrl h / j / k / l` | 在窗口间跳（左/下/上/右），比原生 `Ctrl w` 少按一个键 |
 | `Tab` / `Shift Tab` | 下一个 / 上一个 Buffer |
 | `]c` / `[c` | 跳到下一个 / 上一个改动块 |
-| `K` | 悬浮文档（LSP） |
+| `K` | 悬浮文档（LSP；当前文件没有语言服务时会提示一句，不再退化成原生 `:help`） |
 | `Esc` | 退插入模式 / 关浮窗 |
 
 ## 4. 插件自带的老牌键（不用背，用得多自然会）
@@ -176,7 +179,7 @@
 2. `<leader>bl` 重复定义两遍（复制粘贴残留）→ 清理，补上 `空格 b o`（关闭其他）。
 3. `空格 w k` 的命令拼成了 `<cmdsplit`（会报错）→ 重写为 `aboveleft split`；分屏不再改动 `splitright/splitbelow` 全局选项。
 4. which-key 里声明了 `空格 c` / `空格 h` / `空格 t` 三个分组却没有任何键位（弹窗是空的）→ 现在每个分组都有真实键位：`c` 变成单键、`h` 是帮助组、`t` 删除。
-5. **LSP 键位原来挂在 `on_attach` 上，Neovim 0.11+ 已不生效**（实测 `空格 l d` 按下去毫无反应）→ 改挂 `LspAttach` 自动命令；现在键位只在支持的语言文件里出现且确实生效（已验证跳转、引用）。
+5. **LSP 键位原来挂在 `on_attach` 上，Neovim 0.11+ 已不生效**（实测 `空格 l d` 按下去毫无反应）→ 改挂 `LspAttach` 自动命令；键位只在支持的语言文件里出现且确实生效（已验证跳转、引用）。**但这个方案本身有隐患，2026-09-18 已改为全局定义，见第 15 条。**
 6. gitsigns 装了但没配置、没键位；hop 装了没有任何键位 → 都接上了（见上表）。
 7. nvim-treesitter 已升级到 main 分支（重写版），旧的 `highlight/indent/incremental_selection` 配置全部失效、**语法高亮实际没走 treesitter** → 改为显式 `vim.treesitter.start()` + treesitter 折叠，并自动补装缺失 parser（已补 lua/python/css/json/markdown/go/blade/yaml/bash/tsx 等）。
 8. `lua/plugins-config/nvim-tree.lua` 是没被引用的死文件（且语法有错）→ 删除。
@@ -186,6 +189,8 @@
 12. 文件命名与实际内容不符：`tokyonight.lua`（其实是 catppuccin）→ `colorscheme.lua`；`glow.lua`（含 render-markdown）→ `markdown.lua`；`mason.lua`（含全部 LSP 配置）→ `lsp.lua`。
 13. 启动时对所有文件强设 `foldmethod=expr` → 现在只对能解析出语法树的文件类型设置。
 14. 新增 `updatetime = 250`，让 gitsigns 标记和诊断更新更及时。
+15. **（2026-09-18）`空格 l *` 挂在 `LspAttach` 上是隐患：按了没反应，还会误删行。** 没附加 LSP 的 buffer 里这些键根本不存在，按键会「漏」成原生命令 —— `空格 l d` = 右移 + 右移 + `d`（删除操作符挂起），紧接着再按一次 `d` 就是 `dd`，**整行被删**；`空格 l i` = 直接进插入模式；`空格 l a` 同理。→ 这组键 + `K` 改到 `core/keymaps.lua` **全局定义**：`vim.lsp.get_clients({ bufnr = 0 })` 为空时 `vim.notify` 提示后返回，任何文件里按都有确定结果，不会再变成别的命令。实测：9 个键全局可见、无 LSP 时只提示不动缓冲区、`空格 l h` 在 lua_ls 附加后正常弹浮窗。
+16. `vim.diagnostic.goto_next / goto_prev` 在 0.12 已弃用（每按一次就打一条弃用警告）→ 换成 `vim.diagnostic.jump({ count = ±1, float = true })`。这两个键不依赖 LSP，所以不加 guard。
 
 ## 9. 按项目补装的语言服务（2026-09-15 第二批）
 
@@ -244,3 +249,5 @@
 - 格式化不在保存时自动跑（避免 AI 写的大改动被整片重排）；要开自动格式化，在 `lua/plugins/format.lua` 的 `opts` 里加 `format_on_save = { timeout_ms = 1000 }`。
 - 主题固定为 catppuccin macchiato（原 `空格 t h` 循环主题的键随 tokyonight 一起删了）；要换风格改 `lua/plugins/colorscheme.lua` 的 `flavour`（latte / frappe / macchiato / mocha）。
 - 窗口/分屏、Buffer 的键位都在上面表里，`.vimrc` 时代的 `Ctrl w` 前缀键仍然可用（原生），只是推荐用 `Ctrl h/j/k/l`。
+- **别在「按了没反应」时连按或乱按**：懒加载插件的键（`空格 g g`、`空格 f`、`空格 e` 等）从按下到界面出现有 20–110ms（实测冷启动：telescope 24ms、lazygit 85ms、nvim-tree 111ms），这期间多按的键会排队，界面一出来就落进去 —— 例如落进 lazygit 后，`d` 是「丢弃改动」、`空格` 是暂存、`q` 退出。同理，**插入模式里按 `空格 gg` 就是往文件里打字**（所有 leader 键都只对普通模式生效）。
+- 整条 leader 序列慢于 `timeoutlen`（默认 1000ms）会被当作单个按键执行：`空格 l d` 如果你在 `空格` 和 `l` 之间停了 1 秒以上，`空格` 会按「右移」执行。打字慢的话把这个值调大（`lua/core/options.lua` 里加 `opt.timeoutlen = 1500`），但它只影响「停顿」，不影响键位是否存在。
